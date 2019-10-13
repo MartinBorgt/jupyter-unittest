@@ -12,9 +12,9 @@ def find_notebook(fullname, path=None):
     and tries turning "Foo_Bar" into "Foo Bar" if Foo_Bar
     does not exist.
     """
-    name = fullname.rsplit('.', 1)[-1]
+    name = fullname.rsplit(".", 1)[-1]
     if not path:
-        path = ['']
+        path = [""]
     for d in path:
         nb_path = os.path.join(d, name + ".ipynb")
         if os.path.isfile(nb_path):
@@ -27,6 +27,7 @@ def find_notebook(fullname, path=None):
 
 class NotebookLoader(object):
     """Module Loader for Jupyter Notebooks"""
+
     def __init__(self, path=None):
         self.shell = InteractiveShell.instance()
         self.path = path
@@ -36,13 +37,13 @@ class NotebookLoader(object):
         path = find_notebook(fullname, self.path)
 
         # load the notebook object
-        with io.open(path, 'r', encoding='utf-8') as f:
+        with io.open(path, "r", encoding="utf-8") as f:
             nb = read(f, 4)
 
         mod = types.ModuleType(fullname)
         mod.__file__ = path
         mod.__loader__ = self
-        mod.__dict__['get_ipython'] = get_ipython
+        mod.__dict__["get_ipython"] = get_ipython
         sys.modules[fullname] = mod
 
         # extra work to ensure that magics that would affect the user_ns
@@ -52,15 +53,22 @@ class NotebookLoader(object):
 
         try:
             for cell in nb.cells:
-                if cell.cell_type == 'code':
+                if cell.cell_type == "code":
                     # transform the input to executable Python
-                    code = self.shell.input_transformer_manager.transform_cell(cell.source)
+                    code = self.shell.input_transformer_manager.transform_cell(
+                        cell.source
+                    )
                     # don't run the imported code when it is imported, because jupyter notebooks usually take fairly
                     # long to run completely. Instead save cells that can be run separately using exec.
                     ast_tree = ast.parse(code)
                     for branch in ast_tree.body:
                         # do not run top level code
-                        if type(branch) in [ast.Import, ast.ImportFrom, ast.FunctionDef, ast.ClassDef]:
+                        if type(branch) in [
+                            ast.Import,
+                            ast.ImportFrom,
+                            ast.FunctionDef,
+                            ast.ClassDef,
+                        ]:
                             try:
                                 exec(astor.to_source(branch), mod.__dict__)
                             except (NameError, NotImplementedError):
@@ -74,6 +82,7 @@ class NotebookLoader(object):
 
 class NotebookFinder(object):
     """Module finder that locates Jupyter Notebooks"""
+
     def __init__(self):
         self.loaders = {}
 

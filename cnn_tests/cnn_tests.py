@@ -10,7 +10,7 @@ from setup_notebook_import import NotebookFinder
 
 NotebookFinder.setup()
 
-from cnn import (
+from cnn.cnn import (
     create_model,
     downsample,
     jaccard_bce_loss,
